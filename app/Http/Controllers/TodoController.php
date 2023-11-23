@@ -26,12 +26,13 @@ class TodoController extends Controller
     {
         $todo = Todo::findOrFail($id);
 
-        $request->validate($request, [
+        $request->validate([
             'title' => 'required|string|max:255',
         ]);
-
+    
         $todo->title = $request->input('title');
         $todo->update();
+
 
         return response()->json(['message' => 'Todo title updated']);
     }
