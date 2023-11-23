@@ -6,17 +6,36 @@
                 <input type="text" class="form-control mb-3" id="search-todo" placeholder="Search To-Do">
             </div>
         </div>
+        <!-- Updated HTML form -->
 
-        <form class="mt-4" id="add-todo-form">
-            <div class="row">
-                <div class="col-md-6">
-                    <input type="text" class="form-control mb-3" id="todo-title" placeholder="Add new todo">
-                </div>
-                <div class="col-md-6">
-                    <button type="submit" class="btn btn-info">Add</button>
-                </div>
+        <button type="button" class="btn btn-primary float-left" data-bs-toggle="modal" data-bs-target="#addTodoModal">
+            Add To-Do
+        </button>
+
+       <!-- Bootstrap Modal -->
+<div class="modal fade" id="addTodoModal" tabindex="-1" aria-labelledby="addTodoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTodoModalLabel">Add To-Do</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </form>
+            <div class="modal-body">
+                <form id="add-todo-form" method="post">
+                    @csrf
+                    <input type="text" id="todo-name" name="name" placeholder="To-Do Name" class="form-control">
+                    <textarea id="todo-description" name="description" placeholder="To-Do Description" class="form-control"></textarea>
+                    <input type="file" id="todo-image" name="image">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="add-todo-form" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
         <ul class="list-group" id="todo-list">
             @foreach ($todos as $todo)
@@ -24,7 +43,8 @@
                     <div>
                         <span class="ms-2 todo-title" data-id="{{ $todo->id }}">{{ $todo->title }}</span>
                     </div>
-                    <button class="btn btn-danger delete-todo" data-id="{{ $todo->id }}"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn btn-danger delete-todo" data-id="{{ $todo->id }}"><i
+                            class="fa-solid fa-trash"></i></button>
                 </li>
             @endforeach
         </ul>
@@ -41,32 +61,35 @@
             toastr.success(message);
         }
         $('#add-todo-form').submit(function(event) {
-            event.preventDefault();
-            var title = $('#todo-title').val();
+    event.preventDefault();
 
-            $.ajax({
-                url: '/store',
-                type: 'POST',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    title: title
-                },
-                success: function(data) {
-                    $('#todo-list').append(`
+    var formData = new FormData($(this)[0]);
+    $.ajax({
+        url: '/store',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(data) {
+            $('#todo-list').append(`
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="ms-2 todo-title" data-id="${data.id}">${data.title}</span>
+                    </div>
+                    <button class="btn btn-danger delete-todo" data-id="${data.id}"><i class="fa-solid fa-trash"></i></button>
+                </li>
+            `);
+            $('#todo-title').val('');
+            $('#todo-description').val('');
+            $('#todo-image').val('');
+            toastr.success('To-Do added successfully');
+        },
+        error: function() {
+            toastr.error('Failed to add To-Do.');
+        }
+    });
+});
 
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-
-                    <span class="ms-2 todo-title" data-id="${data.id}">${data.title}</span>
-                </div>
-                <button class="btn btn-danger delete-todo" data-id="${data.id}"><i class="fa-solid fa-trash"></i></button>
-            </li>
-                `);
-                    $('#todo-title').val('');
-                    toastr.success('Todo Added successfully');
-                }
-            });
-        });
 
         $(document).on('dblclick', '.todo-title', function() {
             var todoId = $(this).data('id');
@@ -87,7 +110,7 @@
                     },
                     success: function() {
                         $('.todo-title[data-id="' + todoId + '"]').text(newTitle);
-                    toastr.success('Todo updated successfully!');
+                        toastr.success('Todo updated successfully!');
 
                     }
                 });

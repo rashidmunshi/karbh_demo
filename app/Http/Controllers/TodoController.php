@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Todo;
 use Illuminate\Http\Request;
+use App\Http\Requests\TodoRequest;
 
 class TodoController extends Controller
 {
@@ -13,14 +14,18 @@ class TodoController extends Controller
         return view('todos.index', compact('todos'));
     }
 
-    public function store(Request $request)
+    public function store(TodoRequest $todoRequest)
     {
-        $todo = Todo::create([
-            'user_id' => auth()->id(),
-            'title' => $request->input('title'),
-        ]);
 
-        return response()->json($todo);
+        dd($todoRequest->toArray());
+        $imagePath = $todoRequest->file('image')->store('todo_images');
+
+        $todo = $todoRequest->validated();
+        $todo['user_id'] = auth()->id();
+        $todo ['image'] = $imagePath;
+        
+        $todos = Todo::create($todo);
+        return response()->json($todos);
     }
     public function update(Request $request, $id)
     {
@@ -53,3 +58,10 @@ class TodoController extends Controller
         return response()->json(['todos' => $todos]);
     }
 }
+
+
+//task
+//task form - Task name, Task Description , Task Image (crud)
+//three type status =  pending (default) , in progress , completed
+// add and edit popup form
+//
