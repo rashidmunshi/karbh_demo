@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/update/{id}', [TodoController::class, 'update']);
     Route::delete('delete/{id}', [TodoController::class, 'destroy']);
     Route::get('/search', [TodoController::class, 'search']);
+    Route::get('/edit/{id}', [TodoController::class, 'edit'])->name('todos.edit');
 });
 
 require __DIR__ . '/auth.php';

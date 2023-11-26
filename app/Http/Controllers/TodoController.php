@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\TodoRequest;
+use Illuminate\Support\Facades\Storage;
 
 class TodoController extends Controller
 {
@@ -16,30 +17,46 @@ class TodoController extends Controller
 
     public function store(TodoRequest $todoRequest)
     {
+        $todo = new Todo();
+        $todo->name = $todoRequest->name;
+        $todo->user_id = auth()->id();
+        $todo->description = $todoRequest->description;
 
-        dd($todoRequest->toArray());
-        $imagePath = $todoRequest->file('image')->store('todo_images');
-
-        $todo = $todoRequest->validated();
-        $todo['user_id'] = auth()->id();
-        $todo ['image'] = $imagePath;
-        
-        $todos = Todo::create($todo);
-        return response()->json($todos);
+        if ($todoRequest->hasFile('image')) {
+            $image = $todoRequest->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            Storage::putFileAs('public/images', $image, $imageName);
+            $todo->image = 'storage/images/' . $imageName; // Modify this path as needed
+        }
+        $todo->save();
+        return response()->json(['message' => 'Todo created successfully', 'todo' => $todo]);
     }
+
+    public function edit($id){
+        $todo = Todo::findOrFail($id);
+        return view('todos.edit', compact('todo'));
+
+    }
+
+
     public function update(Request $request, $id)
     {
+
         $todo = Todo::findOrFail($id);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-        ]);
-    
-        $todo->title = $request->input('title');
+        $todo->name = $request->input('name');
+        $todo->description = $request->input('description');
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('images'), $imageName);
+            $todo->image = 'images/' . $imageName;
+        }
+
         $todo->update();
 
-
-        return response()->json(['message' => 'Todo title updated']);
+        return response()->json(['message' => 'Todo updated successfully', 'todo' => $todo]);
     }
 
     public function destroy($id)
@@ -53,7 +70,7 @@ class TodoController extends Controller
     {
         $searchText = $request->input('search');
 
-        $todos = Todo::where('title', 'like', '%' . $searchText . '%')->get();
+        $todos = Todo::where('name', 'like', '%' . $searchText . '%')->get();
 
         return response()->json(['todos' => $todos]);
     }
