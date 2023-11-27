@@ -16,26 +16,32 @@ class TodoController extends Controller
     }
 
     public function store(TodoRequest $todoRequest)
-    {
-        $todo = new Todo();
-        $todo->name = $todoRequest->name;
-        $todo->user_id = auth()->id();
-        $todo->description = $todoRequest->description;
+    { $validatedData = $todoRequest->validated();
 
+        $todo = new Todo();
+        $todo->fill([
+            'name' => $validatedData['name'],
+            'user_id' => auth()->id(),
+            'description' => $validatedData['description'],
+        ]);
+    
         if ($todoRequest->hasFile('image')) {
-            $image = $todoRequest->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            Storage::putFileAs('public/images', $image, $imageName);
-            $todo->image = 'storage/images/' . $imageName; // Modify this path as needed
+            $todo->image = $this->uploadImage($todoRequest->file('image'));
         }
+    
         $todo->save();
         return response()->json(['message' => 'Todo created successfully', 'todo' => $todo]);
     }
 
-    public function edit($id){
-        $todo = Todo::findOrFail($id);
-        return view('todos.edit', compact('todo'));
+    public function edit($id)
+    {
+        $todo = Todo::find($id);
 
+        if (!$todo) {
+            return response()->json(['error' => 'Todo not found'], 404);
+        }
+
+        return response()->json($todo);
     }
 
 
@@ -44,19 +50,28 @@ class TodoController extends Controller
 
         $todo = Todo::findOrFail($id);
 
-        $todo->name = $request->input('name');
-        $todo->description = $request->input('description');
+        $validatedData = $request->toArray();
 
+        $todo->fill([
+            'name' => $validatedData['name'],
+            'description' => $validatedData['description'],
+        ]);
+    
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path('images'), $imageName);
-            $todo->image = 'images/' . $imageName;
+            $todo->image = $this->uploadImage($request->file('image'));
         }
-
-        $todo->update();
+    
+        $todo->save();
 
         return response()->json(['message' => 'Todo updated successfully', 'todo' => $todo]);
+    }
+
+
+    private function uploadImage($image)
+    {
+        $imageName = time() . '.' . $image->getClientOriginalExtension();
+        $path = $image->storeAs('public/images', $imageName);
+        return 'storage/' . str_replace('public/', '', $path);
     }
 
     public function destroy($id)

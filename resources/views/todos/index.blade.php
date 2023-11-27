@@ -8,10 +8,47 @@
         </div>
         <!-- Updated HTML form -->
 
+        <div class="modal fade" id="editTodoModal" tabindex="-1" aria-labelledby="editTodoModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editTodoModalLabel">Edit To-Do</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="edit-todo-form" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" id="editTodoId">
+                            <div class="mb-3">
+                                <label for="edit-todo-name" class="form-label">To-Do Name:</label>
+                                <input type="text" id="edit-todo-name" name="name" placeholder="To-Do Name"
+                                    class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-todo-description" class="form-label">To-Do Description:</label>
+                                <textarea id="edit-todo-description" name="description" placeholder="To-Do Description" class="form-control"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-todo-image" class="form-label">Upload Image:</label>
+                                <input type="file" id="edit-todo-image" name="image" class="form-control">
+                                <div class="mb-3">
+                                    <img id="edit-todo-image-preview" src="#" alt="Preview"
+                                        style="max-width: 100px; max-height: 100px;">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" form="edit-todo-form" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
 
-        
+
 
 
         <div class="d-flex justify-content-end my-3">
@@ -57,7 +94,8 @@
 
         <ul class="list-group" id="todo-list">
             @foreach ($todos as $td)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <li class="list-group-item d-flex justify-content-between align-items-center" id="todo-li"
+                    data-id="{{ $td->id }}">
                     <div class="d-flex align-items-center">
                         <img src="{{ asset($td->image) }}" alt="{{ $td->name }} Image" class="me-3"
                             style="max-width: 100px; max-height: 100px;">
@@ -69,12 +107,8 @@
                     </div>
 
                     <div>
-                        {{-- /  <button class="btn btn-success me-2 edit-todo" data-id="{{ $td->id }}"><i
-                                class="fas fa-edit"></i></button> --}}
-                        <!-- Example usage to open the edit modal for a specific Todo -->
-                        <a href="{{ route('todos.edit', ['id' => $td->id]) }}" class="btn btn-success me-2 edit-todo"
-                            data-bs-toggle="modal" data-bs-target="#editTodoModal" data-id="{{ $td->id }}"><i
-                                class="fa-solid fa-edit"></i></a>
+                        <button class="btn btn-success me-2 edit-todo" data-id="{{ $td->id }}"><i
+                                class="fas fa-edit"></i></button>
 
                         <button class="btn btn-danger delete-todo" data-id="{{ $td->id }}"><i
                                 class="fas fa-trash-alt"></i></button>
@@ -84,7 +118,8 @@
         </ul>
     </div>
 
-    <div class="modal fade" id="addTodoModal" tabindex="-1" aria-labelledby="addTodoModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addTodoModal" tabindex="-1" aria-labelledby="addTodoModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -113,7 +148,7 @@
 <script>
     $(document).ready(function() {
 
-        
+
         function showSuccessToast(message) {
             toastr.success(message);
         }
@@ -164,35 +199,67 @@
             });
         });
 
+        $('.edit-todo').click(function() {
+            var todoId = $(this).data('id');
 
+            // AJAX request to fetch the todo data
+            $.ajax({
+                url: '/edit/' + todoId,
+                type: 'GET',
+                success: function(response) {
+                    // Populate the form fields with existing values
+                    $('#edit-todo-name').val(response.name);
+                    $('#edit-todo-description').val(response.description);
 
+                    // Assuming the image is displayed as a preview in an <img> tag
+                    $('#edit-todo-image-preview').attr('src', response.image);
 
+                    // Update the design of the fields if needed
+                    $('#edit-todo-name').addClass('form-control-updated');
+                    $('#edit-todo-description').addClass('form-control-updated');
+                    $('#editTodoId').val(response.id)
 
-        $(document).on('dblclick', '.todo-title', function() {
-            var todoId = $(this).response('id');
-            var todoTitle = $(this).text();
-
-            $(this).html(`<input type="text" class="edit-todo" value="${todoTitle}">`);
-            $('.edit-todo').focus().select();
-
-            $('.edit-todo').on('blur', function() {
-                var newTitle = $(this).val();
-
-                $.ajax({
-                    url: `/update/${todoId}`,
-                    type: 'post',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        title: newTitle
-                    },
-                    success: function() {
-                        $('.todo-title[data-id="' + todoId + '"]').text(newTitle);
-                        toastr.success('Todo updated successfully!');
-
-                    }
-                });
+                    // Show the modal
+                    $('#editTodoModal').modal('show');
+                },
             });
         });
+
+
+        $('#edit-todo-form').submit(function(e) {
+            e.preventDefault();
+            var todoId = $('#editTodoId').val();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: '/update/' + todoId,
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    console.log(response);
+                    $('#editTodoModal').modal('hide');
+                    var listItem = $('#todo-li[data-id="' + todoId + '"]');
+                    listItem.find('h5').text('Name: ' + response.todo.name);
+                    listItem.find('p').text('Description: ' + response.todo.description);
+
+                    // Update the image source if the image has changed
+                    if (response.todo.image) {
+                        listItem.find('img').attr('src', response.todo.image);
+                    }
+                    toastr.success('Todo Updated successfully');
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
 
         $(document).on('click', '.delete-todo', function() {
             var id = $(this).data('id');
