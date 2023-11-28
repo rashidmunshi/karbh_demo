@@ -5,18 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\TodoRequest;
-use Illuminate\Support\Facades\Storage;
 
 class TodoController extends Controller
 {
     public function index()
     {
-        $todos  = Todo::all();
+        $todos  = Todo::latest()->get();
         return view('todos.index', compact('todos'));
     }
 
     public function store(TodoRequest $todoRequest)
-    { $validatedData = $todoRequest->validated();
+    {
+        $validatedData = $todoRequest->validated();
 
         $todo = new Todo();
         $todo->fill([
@@ -24,11 +24,11 @@ class TodoController extends Controller
             'user_id' => auth()->id(),
             'description' => $validatedData['description'],
         ]);
-    
+
         if ($todoRequest->hasFile('image')) {
             $todo->image = $this->uploadImage($todoRequest->file('image'));
         }
-    
+
         $todo->save();
         return response()->json(['message' => 'Todo created successfully', 'todo' => $todo]);
     }
@@ -56,11 +56,11 @@ class TodoController extends Controller
             'name' => $validatedData['name'],
             'description' => $validatedData['description'],
         ]);
-    
+
         if ($request->hasFile('image')) {
             $todo->image = $this->uploadImage($request->file('image'));
         }
-    
+
         $todo->save();
 
         return response()->json(['message' => 'Todo updated successfully', 'todo' => $todo]);
@@ -88,6 +88,15 @@ class TodoController extends Controller
         $todos = Todo::where('name', 'like', '%' . $searchText . '%')->get();
 
         return response()->json(['todos' => $todos]);
+    }
+
+    public function changeStatus()
+    {
+        $todo = Todo::findOrFail(request()->todo_id);
+        $todo->todo_status = request()->status;
+        $todo->save();
+    
+        return response()->json(['message' => 'Status updated successfully']);
     }
 }
 

@@ -1,0 +1,11 @@
+/* Customize Parsley error messages color */
+.parsley-errors-list {
+    color: red; /* Change to your preferred color */
+    /* Additional styles can be applied as needed */
+}
+
+/* Optionally, you can style the individual error messages */
+.parsley-required {
+    /* Customize the color for a specific validation error type */
+    color: red; /* Change to your preferred color */
+}

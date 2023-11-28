@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('delete/{id}', [TodoController::class, 'destroy']);
     Route::get('/search', [TodoController::class, 'search']);
     Route::get('/edit/{id}', [TodoController::class, 'edit'])->name('todos.edit');
+    Route::post('change-status',[TodoController::class,'changeStatus'])->name('update-status');
 });
 
 require __DIR__ . '/auth.php';
