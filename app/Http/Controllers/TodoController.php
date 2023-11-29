@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\TodoRequest;
+use Illuminate\Support\Facades\File;
 
 class TodoController extends Controller
 {
@@ -24,12 +25,14 @@ class TodoController extends Controller
             'user_id' => auth()->id(),
             'description' => $validatedData['description'],
         ]);
+        $todo['todo_status'] = 'pending';
 
         if ($todoRequest->hasFile('image')) {
             $todo->image = $this->uploadImage($todoRequest->file('image'));
         }
 
         $todo->save();
+
         return response()->json(['message' => 'Todo created successfully', 'todo' => $todo]);
     }
 
@@ -69,9 +72,12 @@ class TodoController extends Controller
 
     private function uploadImage($image)
     {
-        $imageName = time() . '.' . $image->getClientOriginalExtension();
-        $path = $image->storeAs('public/images', $imageName);
-        return 'storage/' . str_replace('public/', '', $path);
+        $destination = 'storage/app/public/todo-images' . $image;
+        if (File::exists($destination)) {
+            File::delete($destination);
+        }
+        $imageName = time() . '.' .  $image->getClientOriginalName();
+        return $image->move('storage/app/public/todo-images', $imageName);
     }
 
     public function destroy($id)
@@ -95,7 +101,7 @@ class TodoController extends Controller
         $todo = Todo::findOrFail(request()->todo_id);
         $todo->todo_status = request()->status;
         $todo->save();
-    
+
         return response()->json(['message' => 'Status updated successfully']);
     }
 }

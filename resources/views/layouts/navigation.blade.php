@@ -23,10 +23,10 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <img src="{{asset('storage/'.Auth::user()->profile_picture) }}" alt="{{ Auth::user()->name }}" class="h-6 w-6 rounded-full">
+                            <img src="{{asset('storage/app/public/profile_images/' .Auth::user()->profile_picture) }}" alt="{{ Auth::user()->name }}" class="h-6 w-6 rounded-full">
                             <div class="ms-2">{{ Auth::user()->name }}</div>
                         </button>
-                        
+
                     </x-slot>
 
                     <x-slot name="content">
@@ -34,15 +34,14 @@
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
-                     <x-dropdown-link :href="route('todos.list')">
+                        <x-dropdown-link :href="route('todos.list')">
                             Todo
                         </x-dropdown-link>
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -87,8 +86,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                    <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

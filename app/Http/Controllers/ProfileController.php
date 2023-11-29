@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use App\Http\Requests\ProfileUpdateRequest;
 
 class ProfileController extends Controller
 {
@@ -29,19 +30,25 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $user->fill($request->except('image'));
-    
+
         if ($request->hasFile('profile_picture')) {
             $image = $request->file('profile_picture');
-    
-            $imagePath = $image->store('profile_images', 'public');
-    
-            $user->profile_picture = $imagePath;
+
+            $destination = 'storage/app/public/profile_images/' . $image->getClientOriginalName(); // Added slash
+            if (File::exists($destination)) {
+                File::delete($destination);
+            }
+
+            $imageName = time() . '.' . $image->getClientOriginalExtension(); // Getting the file extension instead of the name
+            $user->profile_picture = $imageName;
+            $image->move('storage/app/public/profile_images/', $imageName); // Moved to the correct directory
         }
-    
+
+
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
-    
+
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

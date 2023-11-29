@@ -21,8 +21,7 @@
                             <input type="hidden" id="editTodoId">
                             <div class="mb-3">
                                 <label for="edit-todo-name" class="form-label">To-Do Name:</label>
-                                <input type="text" id="edit-todo-name" name="name" placeholder="To-Do Name"
-                                    class="form-control">
+                                <input type="text" id="edit-todo-name" name="name" placeholder="To-Do Name" class="form-control">
                             </div>
                             <div class="mb-3">
                                 <label for="edit-todo-description" class="form-label">To-Do Description:</label>
@@ -32,8 +31,7 @@
                                 <label for="edit-todo-image" class="form-label">Upload Image:</label>
                                 <input type="file" id="edit-todo-image" name="image" class="form-control">
                                 <div class="mb-3">
-                                    <img id="edit-todo-image-preview" src="#" alt="Preview"
-                                        style="max-width: 100px; max-height: 100px;">
+                                    <img id="edit-todo-image-preview" src="#" alt="Preview" style="max-width: 100px; max-height: 100px;">
                                 </div>
                             </div>
                         </form>
@@ -49,8 +47,7 @@
 
         <div class="d-flex justify-content-end my-3">
             <!-- Updated HTML form -->
-            <button type="button" class="btn btn-primary float-left" data-bs-toggle="modal"
-                data-bs-target="#addTodoModal">
+            <button type="button" class="btn btn-primary float-left" data-bs-toggle="modal" data-bs-target="#addTodoModal">
                 <i class="fa-solid fa-plus"></i>
             </button>
         </div>
@@ -67,20 +64,15 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="todo-name" class="form-label">To-Do Name:</label>
-                                <input type="text" id="todo-name" name="name" placeholder="To-Do Name"
-                                    class="form-control" required data-parsley-trigger="change"
-                                    data-parsley-required-message="Please enter the To-Do Name">
+                                <input type="text" id="todo-name" name="name" placeholder="To-Do Name" class="form-control" required data-parsley-trigger="change" data-parsley-required-message="Please enter the To-Do Name">
                             </div>
                             <div class="mb-3">
                                 <label for="todo-description" class="form-label">To-Do Description:</label>
-                                <textarea id="todo-description" name="description" placeholder="To-Do Description" class="form-control" required
-                                    data-parsley-trigger="change" data-parsley-required-message="Please enter the To-Do Description"></textarea>
+                                <textarea id="todo-description" name="description" placeholder="To-Do Description" class="form-control" required data-parsley-trigger="change" data-parsley-required-message="Please enter the To-Do Description"></textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="todo-image" class="form-label">Upload Image:</label>
-                                <input type="file" id="todo-image" name="image" class="form-control" required
-                                    data-parsley-trigger="change"
-                                    data-parsley-required-message="Please upload an image">
+                                <input type="file" id="todo-image" name="image" class="form-control" required data-parsley-trigger="change" data-parsley-required-message="Please upload an image">
                             </div>
                         </form>
                     </div>
@@ -94,45 +86,37 @@
 
         <ul class="list-group" id="todo-list">
             @foreach ($todos as $td)
-                <li class="list-group-item d-flex justify-content-between align-items-center" id="todo-li"
-                    data-id="{{ $td->id }}">
-                    <div class="d-flex align-items-center">
-                        <img src="{{ asset($td->image) }}" alt="{{ $td->name }} Image" class="me-3"
-                            style="max-width: 100px; max-height: 100px;">
+            <li class="list-group-item d-flex justify-content-between align-items-center" id="todo-li" data-id="{{ $td->id }}">
+                <div class="d-flex align-items-center">
+                    <img src="{{ asset($td->image) }}" alt="{{ $td->name }} Image" class="me-3" style="max-width: 100px; max-height: 100px;">
 
-                        <div>
-                            <h5 class="mb-0">Name :{{ $td->name }}</h5>
-                            <p class="mb-0">Description :{{ $td->description }}</p>
-                        </div>
+                    <div>
+                        <h5 class="mb-0">Name :{{ $td->name }}</h5>
+                        <p class="mb-0">Description :{{ $td->description }}</p>
+                    </div>
+                </div>
+
+                <div class="d-flex">
+                    <div class="status-chip mt-2 me-3">
+                        @if ($td->todo_status == 'pending')
+                        <button class="badge bg-warning text-dark change-status" data-id="{{ $td->id }}" data-status="in_progress">Pending</button>
+                        @elseif($td->todo_status == 'in_progress')
+                        <button class="badge bg-primary text-white change-status" data-id="{{ $td->id }}" data-status="completed">In Progress</button>
+                        @elseif($td->todo_status == 'completed')
+                        <button class="badge bg-success change-status" data-id="{{ $td->id }}" data-status="pending">Completed</button>
+                        @endif
                     </div>
 
-                    <div class="d-flex">
-                        <div class="status-chip mt-2 me-3">
-                            @if ($td->todo_status == 'pending')
-                                <button class="badge bg-warning text-dark change-status" data-id="{{ $td->id }}"
-                                    data-status="in_progress">Pending</button>
-                            @elseif($td->todo_status == 'in_progress')
-                                <button class="badge bg-primary text-white change-status"
-                                    data-id="{{ $td->id }}" data-status="completed">In Progress</button>
-                            @elseif($td->todo_status == 'completed')
-                                <button class="badge bg-success change-status" data-id="{{ $td->id }}"
-                                    data-status="pending">Completed</button>
-                            @endif
-                        </div>
+                    <button class="btn btn-success me-2 edit-todo" data-id="{{ $td->id }}"><i class="fas fa-edit"></i></button>
 
-                        <button class="btn btn-success me-2 edit-todo" data-id="{{ $td->id }}"><i
-                                class="fas fa-edit"></i></button>
-
-                        <button class="btn btn-danger delete-todo" data-id="{{ $td->id }}"><i
-                                class="fas fa-trash-alt"></i></button>
-                    </div>
-                </li>
+                    <button class="btn btn-danger delete-todo" data-id="{{ $td->id }}"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </li>
             @endforeach
         </ul>
     </div>
 
-    <div class="modal fade" id="addTodoModal" tabindex="-1" aria-labelledby="addTodoModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="addTodoModal" tabindex="-1" aria-labelledby="addTodoModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -142,8 +126,7 @@
                 <div class="modal-body">
                     <form id="add-todo-form" method="post">
                         @csrf
-                        <input type="text" id="todo-name" name="name" placeholder="To-Do Name"
-                            class="form-control">
+                        <input type="text" id="todo-name" name="name" placeholder="To-Do Name" class="form-control">
                         <textarea id="todo-description" name="description" placeholder="To-Do Description" class="form-control"></textarea>
                         <input type="file" id="todo-image" name="image">
                     </form>
@@ -172,60 +155,57 @@
             event.preventDefault();
             var formData = new FormData(this);
 
-
             $.ajax({
-                url: '/store',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    $('#todo-list').prepend(
-                        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                url: '/store'
+                , type: 'POST'
+                , data: formData
+                , contentType: false
+                , processData: false
+                , success: function(response) {
+                    var imagePath = '{{ asset("storage/todo-images/") }}' + '/' + response.todo.image.basename;
+
+                    var newItemHtml =
+                        '<li class="list-group-item d-flex justify-content-between align-items-center" id="todo-li" data-id="' +
+                        response.todo.id + '">' +
                         '<div class="d-flex align-items-center">' +
-                        '<img src="' + response.todo.image + '" alt="' + response.todo
-                        .name +
+                        '<img src="' + imagePath + '" alt="' + response.todo.name +
                         ' Image" class="me-3" style="max-width: 100px; max-height: 100px;">' +
                         '<div>' +
-                        '<h5 class="mb-0">Name: ' + response.todo.name + '</h5>' +
-                        '<p class="mb-0">Description: ' + response.todo.description +
-                        '</p>' +
+                        '<h5 class="mb-0">Name : ' + response.todo.name + '</h5>' +
+                        '<p class="mb-0">Description : ' + response.todo.description + '</p>' +
                         '</div>' +
                         '</div>' +
                         '<div class="d-flex">' +
-                        '<div class="status-chip mt-2 me-3">' +
-                        (response.todo.todo_status == 'pending' ?
-                            '<button class="badge bg-warning text-dark change-status" data-id="' +
-                            response.todo.id +
-                            '" data-status="in_progress">Pending</button>' :
-                            response.todo.todo_status == 'in_progress' ?
-                            '<button class="badge bg-primary text-white change-status" data-id="' +
-                            response.todo.id +
-                            '" data-status="completed">In Progress</button>' :
-                            response.todo.todo_status == 'completed' ?
-                            '<button class="badge bg-success change-status" data-id="' +
-                            response.todo.id +
-                            '" data-status="pending">Completed</button>' :
-                            '') +
-                        '<button class="btn btn-success me-2 edit-todo" data-id="' +
-                        response.todo.id + '"><i class="fas fa-edit"></i></button>' +
-                        '<button class="btn btn-danger delete-todo" data-id="' +
-                        response.todo.id +
+                        '<div class="status-chip mt-2 me-3">';
+
+                    // Check and add the appropriate status badge based on todo_status
+                    if (response.todo.todo_status == 'pending') {
+                        newItemHtml += '<button class="badge bg-warning text-dark change-status" data-id="' +
+                            response.todo.id + '" data-status="in_progress">Pending</button>';
+                    } else if (response.todo.todo_status == 'in_progress') {
+                        newItemHtml += '<button class="badge bg-primary text-white change-status" data-id="' +
+                            response.todo.id + '" data-status="completed">In Progress</button>';
+                    } else if (response.todo.todo_status == 'completed') {
+                        newItemHtml += '<button class="badge bg-success change-status" data-id="' +
+                            response.todo.id + '" data-status="pending">Completed</button>';
+                    }
+                    newItemHtml +=
+                        '</div>' +
+                        '<button class="btn btn-success me-2 edit-todo" data-id="' + response.todo.id +
+                        '"><i class="fas fa-edit"></i></button>' +
+                        '<button class="btn btn-danger delete-todo" data-id="' + response.todo.id +
                         '"><i class="fas fa-trash-alt"></i></button>' +
                         '</div>' +
-                        '</div>' +
-                        '</li>'
-                    );
+                        '</li>';
 
-
-
+                    $('#todo-list').prepend(newItemHtml);
                     $('#todo-title').val('');
                     $('#todo-description').val('');
                     $('#todo-image').val('');
                     $('#addTodoModal').modal('hide');
                     toastr.success('Todo Added successfully');
-                },
-                error: function() {
+                }
+                , error: function() {
                     toastr.error('Failed to add Todo.');
                 }
             });
@@ -236,9 +216,9 @@
 
             // AJAX request to fetch the todo data
             $.ajax({
-                url: '/edit/' + todoId,
-                type: 'GET',
-                success: function(response) {
+                url: '/edit/' + todoId
+                , type: 'GET'
+                , success: function(response) {
 
                     $('#edit-todo-name').val(response.name);
                     $('#edit-todo-description').val(response.description);
@@ -253,8 +233,8 @@
 
                     // Show the modal
                     $('#editTodoModal').modal('show');
-                },
-            });
+                }
+            , });
         });
 
 
@@ -265,15 +245,15 @@
             var formData = new FormData(this);
 
             $.ajax({
-                url: '/update/' + todoId,
-                type: 'POST',
-                headers: {
+                url: '/update/' + todoId
+                , type: 'POST'
+                , headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
+                }
+                , data: formData
+                , contentType: false
+                , processData: false
+                , success: function(response) {
                     console.log(response);
                     $('#editTodoModal').modal('hide');
                     var listItem = $('#todo-li[data-id="' + todoId + '"]');
@@ -285,8 +265,8 @@
                         listItem.find('img').attr('src', response.todo.image);
                     }
                     toastr.success('Todo Updated successfully');
-                },
-                error: function(xhr) {
+                }
+                , error: function(xhr) {
                     console.log(xhr.responseText);
                 }
             });
@@ -298,12 +278,12 @@
             var listItem = $(this).closest('li');
 
             $.ajax({
-                url: `/delete/${id}`,
-                type: 'DELETE',
-                data: {
+                url: `/delete/${id}`
+                , type: 'DELETE'
+                , data: {
                     _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function() {
+                }
+                , success: function() {
                     listItem.remove();
                     toastr.success('Todo deleted successfully!');
                 }
@@ -316,12 +296,12 @@
             var searchText = $(this).val().toLowerCase();
 
             $.ajax({
-                url: '/search',
-                type: 'GET',
-                data: {
+                url: '/search'
+                , type: 'GET'
+                , data: {
                     search: searchText
-                },
-                success: function(data) {
+                }
+                , success: function(data) {
                     var filteredTodos = data.todos;
 
                     var todoList = $('#todo-list');
@@ -358,14 +338,14 @@
 
 
             $.ajax({
-                url: "{{ route('update-status') }}",
-                type: 'POST',
-                data: {
-                    todo_id: todoId,
-                    status: newStatus,
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
+                url: "{{ route('update-status') }}"
+                , type: 'POST'
+                , data: {
+                    todo_id: todoId
+                    , status: newStatus
+                    , _token: $('meta[name="csrf-token"]').attr('content')
+                }
+                , success: function(response) {
                     console.log(response);
                     if (newStatus === 'in_progress') {
                         button.removeClass('bg-warning text-dark').addClass(
@@ -384,4 +364,5 @@
             })
         })
     });
+
 </script>
